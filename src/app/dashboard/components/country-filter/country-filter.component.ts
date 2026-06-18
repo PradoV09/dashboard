@@ -1,6 +1,7 @@
-import { Component, input, output, model } from '@angular/core';
+import { Component, input, output, model, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { Indicador } from '../../models/indicador.model';
 
 @Component({
   selector: 'app-country-filter',
@@ -11,7 +12,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
     <div class="country-filter">
       <label class="block text-sm font-semibold mb-2">Países</label>
       <p-multiSelect 
-        [options]="countries()" 
+        [options]="availableCountries()" 
         [(ngModel)]="selectedCountries" 
         [showToggleAll]="true"
         [maxSelectedLabels]="3"
@@ -30,8 +31,28 @@ import { MultiSelectModule } from 'primeng/multiselect';
 })
 export class CountryFilterComponent {
   countries = input.required<string[]>();
+  indicador = input<Indicador | null>(null);
   selectedCountries = model.required<string[]>();
   selectionChanged = output<string[]>();
+
+  availableCountries = computed(() => {
+    const indicador = this.indicador();
+    const allCountries = this.countries();
+
+    if (!indicador || allCountries.length === 0) {
+      return allCountries;
+    }
+
+    // Filter countries that have data for the selected indicator
+    const countriesWithData = new Set<string>();
+    for (const dato of indicador.datos) {
+      if (dato.valor !== null && dato.valor !== undefined) {
+        countriesWithData.add(dato.pais);
+      }
+    }
+
+    return allCountries.filter(country => countriesWithData.has(country));
+  });
 
   onSelectionChange(): void {
     this.selectionChanged.emit(this.selectedCountries());

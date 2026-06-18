@@ -84,8 +84,8 @@ import { DataTableComponent } from './components/data-table/data-table.component
                 />
                 <app-country-filter
                   [countries]="allCountries()"
+                  [indicador]="currentIndicador()"
                   [(selectedCountries)]="selectedCountries"
-                  (selectionChanged)="onCountrySelectionChange($event)"
                 />
               </div>
               <div class="action-buttons">
@@ -383,10 +383,6 @@ export class DashboardComponent implements OnInit {
     this.selectedCountries.set([]);
     this.selectedBarChartYear.set(null);
     this.showUploadDialog.set(false);
-  }
-
-  onIndicadorChange(indicadorId: string): void {
-    // Additional logic if needed when countries change
   }
 
   formatDate(isoDate: string | undefined): string {

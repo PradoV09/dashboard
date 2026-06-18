@@ -77,8 +77,10 @@ export class LineChartComponent {
                                 indicadorNombre.includes('inversión');
           for (const param of params) {
             const value = param.value;
-            const formattedValue = value !== null ? value.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—';
-            const suffix = showPercentage && value !== null ? '%' : '';
+            const formattedValue = (value !== null && value !== undefined) 
+              ? value.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) 
+              : '—';
+            const suffix = showPercentage && value !== null && value !== undefined ? '%' : '';
             result += `${param.marker} ${param.seriesName}: ${formattedValue}${suffix}<br/>`;
           }
           return result;

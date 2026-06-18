@@ -1,4 +1,4 @@
-import { Component, input, computed, model } from '@angular/core';
+import { Component, input, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { EChartsOption } from 'echarts';
@@ -17,7 +17,8 @@ import { Indicador } from '../../models/indicador.model';
           <h3 class="font-display" style="margin: 0; font-size: 1.25rem;">Comparación por Año</h3>
           <p-select 
             [options]="availableYears()" 
-            [(ngModel)]="selectedYear" 
+            [ngModel]="selectedYear()" 
+            (ngModelChange)="selectedYear.set($event)"
             optionLabel="label" 
             optionValue="value"
             [style]="{'width': '120px'}"
@@ -51,12 +52,12 @@ import { Indicador } from '../../models/indicador.model';
 export class BarChartComponent {
   indicador = input.required<Indicador>();
   selectedCountries = input.required<string[]>();
-  selectedYear = model<number | null>(null);
+  selectedYear = signal<number | null>(null);
 
   // Auto-select latest year when indicator changes and no year is selected
   latestAvailableYear = computed(() => {
     const indicador = this.indicador();
-    if (!indicador) return null;
+    if (!indicador || indicador.datos.length === 0) return null;
     const years = [...new Set(indicador.datos.map((d) => d.anio))].sort((a, b) => b - a);
     return years.length > 0 ? years[0] : null;
   });
@@ -79,19 +80,28 @@ export class BarChartComponent {
   chartOptions = computed<EChartsOption>(() => {
     const indicador = this.indicador();
     const countries = this.selectedCountries();
-    const year = this.selectedYear();
+    const year = this.selectedYear() ?? this.latestAvailableYear();
 
     if (!indicador || countries.length === 0 || !year) {
       return {};
     }
 
-    const data = countries.map((coun ?? this.latestAvailableYear()try) => {
+    const data = countries.map((country) => {
       const point = indicador.datos.find((d) => d.pais === country && d.anio === year);
       return {
         name: country,
         value: point?.valor ?? null,
       };
-    });
+    }).filter((item) => item.value !== null);
+
+    if (data.length === 0) {
+      return {};
+    }
+
+    const indicadorNombre = indicador.nombre.toLowerCase();
+    const showPercentage = indicadorNombre.includes('desempleo') || 
+                          indicadorNombre.includes('inflación') || 
+                          indicadorNombre.includes('inversión');
 
     return {
       tooltip: {
@@ -102,12 +112,10 @@ export class BarChartComponent {
         formatter: (params: any) => {
           const param = params[0];
           const value = param.value;
-          const formattedValue = value !== null ? value.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—';
-          // Add % for Desempleo, Inflación, and Inversión extranjera
-          const indicadorNombre = indicador.nombre.toLowerCase();
-          const suffix = (indicadorNombre.includes('desempleo') || 
-                        indicadorNombre.includes('inflación') || 
-                        indicadorNombre.includes('inversión')) && value !== null ? '%' : '';
+          const formattedValue = (value !== null && value !== undefined) 
+            ? value.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) 
+            : '—';
+          const suffix = showPercentage && value !== null && value !== undefined ? '%' : '';
           return `${param.name}: ${formattedValue}${suffix}`;
         },
       },
@@ -119,7 +127,7 @@ export class BarChartComponent {
       },
       xAxis: {
         type: 'category',
-        data: countries,
+        data: data.map((d) => d.name),
         axisLabel: {
           rotate: 45,
         },
@@ -129,11 +137,9 @@ export class BarChartComponent {
         name: indicador.nombre,
         axisLabel: {
           formatter: (value: number) => {
+            if (value === null || value === undefined) return '—';
             const formatted = value.toLocaleString('es-CO');
-            const indicadorNombre = indicador.nombre.toLowerCase();
-            const suffix = (indicadorNombre.includes('desempleo') || 
-                          indicadorNombre.includes('inflación') || 
-                          indicadorNombre.includes('inversión')) ? '%' : '';
+            const suffix = showPercentage ? '%' : '';
             return formatted + suffix;
           },
         },
