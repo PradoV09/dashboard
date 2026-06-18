@@ -36,7 +36,8 @@
             "outputMode": "static",
             "security": {
               "allowedHosts": []
-            }
+            },
+            "outputPath": "browser"
           },
           "configurations": {
             "production": {
