@@ -1,0 +1,74 @@
+.file-upload-container {
+  padding: 1.5rem;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 3rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  min-height: 200px;
+}
+
+.loading-container p {
+  color: #495057;
+  font-weight: 500;
+  margin: 0;
+}
+
+.file-info {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: #e8f5e9;
+  border: 1px solid #4caf50;
+  border-radius: 8px;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+::ng-deep .p-fileupload {
+  width: 100%;
+}
+
+::ng-deep .p-fileupload-choose {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+::ng-deep .p-fileupload-choose:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+::ng-deep .p-progress-spinner {
+  width: 3rem;
+  height: 3rem;
+}
+
+::ng-deep .p-progress-spinner-circle {
+  stroke: #667eea;
+}
